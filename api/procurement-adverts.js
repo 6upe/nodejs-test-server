@@ -1,4 +1,4 @@
-module.exports((req,res) => {
+module.exports = (req,res) => {
 
     const blogs = [
         {
@@ -19,4 +19,4 @@ module.exports((req,res) => {
       ];
     
       res.json(blogs);
-});
+};
