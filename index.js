@@ -1,8 +1,16 @@
 const express = require('express');
 const cors = require('cors');
-
+const http = require('http');
 
 const app = express();
+
+// Set up CORS headers middleware
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
 
 app.use(cors());
 
@@ -15,7 +23,6 @@ app.get('/about', (req, res) => {
 });
 
 app.get('/api/procurement-adverts', (req, res) => {
-
     const adverts = [
         {
             advertID: "1",
@@ -45,14 +52,10 @@ app.get('/api/procurement-adverts', (req, res) => {
             advertCreatedAt: "22 Jan, 2023",
             advertImagePath: "../procurement-images/procurement (4).jpg"
         },
-
     ];
 
     res.json(adverts);
 });
-
-
-
 
 const port = process.env.PORT || 4000;
 
