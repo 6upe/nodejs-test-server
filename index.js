@@ -8,11 +8,11 @@ app.use(cors());
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
-  });
+});
 
-  app.get('/about', (req, res) => {
+app.get('/about', (req, res) => {
     res.sendFile(__dirname + '/about.html');
-  });
+});
 
 app.get('/api/procurement-adverts', (req, res) => {
 
@@ -45,7 +45,7 @@ app.get('/api/procurement-adverts', (req, res) => {
             advertCreatedAt: "22 Jan, 2023",
             advertImagePath: "../procurement-images/procurement (4).jpg"
         },
- 
+
     ];
 
     res.json(adverts);

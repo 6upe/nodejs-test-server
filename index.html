@@ -19,13 +19,15 @@
         const getAdverts = async () => {
 
             const advertsObject = await fetch('https://nodejs-test-server.vercel.app/api/procurement-adverts');
-            const adverts = advertsObject.json();
-            console.log(adverts);
-
-            getAdverts.innerHTML = adverts;
+            return(advertsObject.json());
         }
 
-        getAdverts();
+       
+
+        const main = async () => {
+            const adverts = getAdverts();
+            console.log(adverts);
+        }
     </script>
 </body>
 </html>
