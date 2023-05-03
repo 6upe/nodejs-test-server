@@ -6,7 +6,11 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
   });
 
-app.get("/api/procurement-adverts", (req, res) => {
+  app.get('/about', (req, res) => {
+    res.sendFile(__dirname + '/about.html');
+  });
+
+app.get('/api/procurement-adverts', (req, res) => {
      const blogs = [
     {
       blogID: "1",
