@@ -1,22 +1,36 @@
-module.exports = (req,res) => {
+module.exports = (req, res) => {
 
-    const blogs = [
+    const adverts = [
         {
-          blogID: "1",
-          blogTitle: "My First Blog Post",
-          blogContent: "Lorem ipsum dolor sit amet...",
+            advertID: "1",
+            advertTitle: "Job Oppotunity: Software Developer",
+            advertBody: "Some quick example text to build on the card title and make up the bulk of the card's content.",
+            advertCreatedAt: "22 Jan, 2023",
+            advertImagePath: "../procurement-images/procurement (1).jpg"
         },
         {
-          blogID: "2",
-          blogTitle: "My Second Blog Post",
-          blogContent: "Lorem ipsum dolor sit amet...",
+            advertID: "2",
+            advertTitle: "Tender: Renovation of Ablution Block",
+            advertBody: "Some quick example text to build on the card title and make up the bulk of the card's content.",
+            advertCreatedAt: "22 Jan, 2023",
+            advertImagePath: "../procurement-images/procurement (2).jpg"
         },
         {
-          blogID: "3",
-          blogTitle: "My Third Blog Post",
-          blogContent: "Lorem ipsum dolor sit amet...",
+            advertID: "3",
+            advertTitle: "Supplier Registration",
+            advertBody: "Some quick example text to build on the card title and make up the bulk of the card's content.",
+            advertCreatedAt: "22 Jan, 2023",
+            advertImagePath: "../procurement-images/procurement (3).jpg"
         },
-      ];
-    
-      res.json(blogs);
+        {
+            advertID: "4",
+            advertTitle: "Contract Awards",
+            advertBody: "Some quick example text to build on the card title and make up the bulk of the card's content.",
+            advertCreatedAt: "22 Jan, 2023",
+            advertImagePath: "../procurement-images/procurement (4).jpg"
+        },
+ 
+    ];
+
+    res.json(adverts);
 };
