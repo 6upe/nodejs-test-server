@@ -8,5 +8,24 @@
 </head>
 <body>
     <h4>Home: Testing APIs</h4>
+    <div class="adverts">
+        
+    </div>
+
+    
+
+    <script>
+        const advertsContainer = document.querySelector('.adverts');
+        const getAdverts = async () => {
+
+            const advertsObject = await fetch('https://nodejs-test-server.vercel.app/api/procurement-adverts');
+            const adverts = advertsObject.json();
+            console.log(adverts);
+
+            getAdverts.innerHTML = adverts;
+        }
+
+        getAdverts();
+    </script>
 </body>
 </html>

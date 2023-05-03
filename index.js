@@ -1,6 +1,10 @@
 const express = require('express');
+const cors = require('cors');
+
 
 const app = express();
+
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
@@ -11,7 +15,7 @@ app.get('/', (req, res) => {
   });
 
 app.get('/api/procurement-adverts', (req, res) => {
-    
+
     const adverts = [
         {
             advertID: "1",
@@ -46,6 +50,9 @@ app.get('/api/procurement-adverts', (req, res) => {
 
     res.json(adverts);
 });
+
+
+
 
 const port = process.env.PORT || 4000;
 
