@@ -39,7 +39,7 @@ app.get('/api/procurement-adverts', (req, res) => {
     const adverts = [
         {
             advertID: "1",
-            advertTitle: "Job Oppotunity: Software Developer",
+            advertTitle: "Job Oppotunity: 2 Software Developers",
             advertBody: "Some quick example text to build on the card title and make up the bulk of the card's content.",
             advertCreatedAt: "22 Jan, 2023",
             advertImagePath: "../procurement-images/procurement (1).jpg"
