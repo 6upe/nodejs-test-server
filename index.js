@@ -15,7 +15,7 @@ app.use((req, res, next) => {
 app.use(cors({
     origin: ['https://akebu6.github.io'
             , 'http://127.0.0.1:5502/'] // Replace with your allowed origin(s)
-
+    
   }));
   
 
@@ -39,7 +39,7 @@ app.get('/api/procurement-adverts', (req, res) => {
     const adverts = [
         {
             advertID: "1",
-            advertTitle: "Job Oppotunity: 2 Software Developers",
+            advertTitle: "Job Oppotunity: Software Developer",
             advertBody: "Some quick example text to build on the card title and make up the bulk of the card's content.",
             advertCreatedAt: "22 Jan, 2023",
             advertImagePath: "../procurement-images/procurement (1).jpg"
