@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <input type="button" value="Get Questions here" onclick="getQuestions()">
+    <div id="questions"></div>
+    <input type="file" id="pptx-file-input" accept=".pptx">
+    <button onclick="copyContent()" id="cpy-btn">Copy Content</button>
+    <div id="slideContent"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+
+    <script>
+
+function copyContent() {
+    var cpybtn = document.getElementById('cpy-btn');
+  var content = document.getElementById("slideContent").innerText; // get the text content of the div
+  var tempInput = document.createElement("input"); // create a temporary input element
+  tempInput.setAttribute("value", content); // set the input value to the content of the div
+  document.body.appendChild(tempInput); // add the input element to the document
+  tempInput.select(); // select the input element
+  document.execCommand("copy"); // execute the copy command
+  document.body.removeChild(tempInput); // remove the input element
+
+  cpybtn.innerText = 'text copied!';
+}
+
+
+
+
+        const pptxFileInput = document.getElementById("pptx-file-input");
+        const slideContent = document.getElementById("slideContent");
+
+        pptxFileInput.addEventListener("change", () => {
+            console.log('pptx loaded');
+
+            const pptxFile = pptxFileInput.files[0];
+            const zip = new JSZip();
+
+            zip.loadAsync(pptxFile).then((zip) => {
+                const slidePromises = [];
+
+                Object.keys(zip.files).forEach((filename) => {
+                    if (filename.match(/^ppt\/slides\/slide\d+\.xml$/)) {
+                        const slideXML = zip.file(filename).async("string");
+                        slidePromises.push(slideXML);
+                    }
+                });
+
+                Promise.all(slidePromises).then((slides) => {
+                    const slideContents = slides.map((xml) => parseSlideXML(xml));
+                    const concatenatedSlides = slideContents.join('<br>');
+                    slideContent.innerHTML = concatenatedSlides;
+                });
+
+            });
+        });
+
+        function parseSlideXML(xml) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xml, "text/xml");
+            const textElements = xmlDoc.getElementsByTagName("a:t");
+
+            let slideText = "";
+
+            for (let i = 0; i < textElements.length; i++) {
+                slideText += textElements[i].textContent + "\n"; // add newline character
+            }
+
+            return slideText.trim();
+        }
+
+        // ...
+
+        slideContents.forEach(item => {
+            slideContent.innerHTML += `
+    <pre>${item}</pre>
+  `;
+        });
+
+
+
+
+        // OPEN AI API fetch
+        
+        function getQuestions() {
+            console.log('waiting for response from API');
+            const questionsDiv = document.getElementById('questions');
+            const APIKEY = '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';
+
+            const prompt = 'The quick brown fox jumps over the lazy dog.';
+
+            fetch('https://api.openai.com/v1/questions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${APIKEY}`,
+                },
+                body: JSON.stringify({
+                    'prompt': prompt,
+                    'model': 'text-davinci-002',
+                    'temperature': 0.5,
+                    'max_tokens': 5,
+                    'n': 3,
+                    'stop': ['\n']
+                }),
+                mode: 'cors' // Add this line
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    // handle the generated questions here
+                    questionsDiv.innerHTML = data;
+                })
+                .catch(error => {
+                    console.error(error);
+                    // handle errors here
+                });
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Quiz Generator</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+    <form id="quiz-form">
+      <label for="input-text">Enter your text:</label><br>
+      <textarea id="input-text" rows="10" cols="50"></textarea><br>
+      <button type="submit" id="generate-quiz-button">Generate Quiz</button>
+    </form>
+    <ul id="quiz-questions"></ul>
+
+    <script>
+      const generateQuizButton = document.querySelector('#generate-quiz-button');
+      const inputText = document.querySelector('#input-text');
+      const quizQuestions = document.querySelector('#quiz-questions');
+
+      generateQuizButton.addEventListener('click', async (event) => {
+        event.preventDefault();
+
+        const text = inputText.value;
+
+        const response = await fetch('/generate-quiz', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ text })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const questions = await response.json();
+        quizQuestions.innerHTML = questions.map(q => `<li>${q}</li>`).join('');
+      });
+    </script>
+  </body>
+</html>
