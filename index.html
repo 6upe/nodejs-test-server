@@ -18,6 +18,7 @@
 
     <script>
         const advertsContainer = document.querySelector('.adverts');
+
         const getAdverts = async () => {
 
             const advertsObject = await fetch('https://nodejs-test-server.vercel.app/api/procurement-adverts', {
@@ -35,6 +36,8 @@
         }
 
         main();
+
+        advertsContainer.innerHTML = `<p>` + adverts + `</p>`;
     </script>
 </body>
 

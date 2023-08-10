@@ -12,12 +12,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors({
-    origin: ['https://akebu6.github.io'
-            , 'http://127.0.0.1:5502/'] // Replace with your allowed origin(s)
-    
-  }));
-  
+app.use(cors());
+
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
