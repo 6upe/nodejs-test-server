@@ -18,7 +18,7 @@
 
     <script>
         const advertsContainer = document.querySelector('.adverts');
-
+        let advertsObject = [];
         const getAdverts = async () => {
 
             const advertsObject = await fetch('https://nodejs-test-server.vercel.app/api/procurement-adverts', {
@@ -32,12 +32,13 @@
 
         const main = async () => {
             const adverts = await getAdverts();
+            advertsObject = adverts;
             console.log(adverts);
         }
 
         main();
 
-        advertsContainer.innerHTML = `<p>` + adverts + `</p>`;
+        advertsContainer.innerHTML = `<p> data: ` + advertsObject + `</p>`;
     </script>
 </body>
 
