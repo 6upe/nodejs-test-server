@@ -2,11 +2,33 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 
+const { MongoClient } = require('mongodb');
+
+
+
 const app = express();
 
 // Set up CORS headers middleware
 
 app.use(cors());
+
+
+
+// MongoDB Atlas connection string
+const uri = 'mongodb+srv://admin:Pass123@pohg.sbyaxon.mongodb.net/?retryWrites=true&w=majority';
+
+// Create a new MongoClient
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Connect to the MongoDB Atlas cluster
+client.connect(err => {
+  if (err) {
+    console.error('Error connecting to MongoDB:', err);
+  } else {
+    console.log('Connected to MongoDB');
+  }
+});
+
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
@@ -23,6 +45,22 @@ app.get('/extractor', (req, res) => {
 app.get('/kwizme', (req, res) => {
     res.sendFile(__dirname + '/kwizme.html');
 });
+
+app.get('/get-data', (req, res) => {
+    const db = client.db('testdb');
+    const collection = db.collection('users');
+  
+    collection.find().toArray((err, data) => {
+      if (err) {
+        console.error('Error fetching data:', err);
+        res.status(500).send('Internal Server Error');
+      } else {
+        console.log(data);
+        res.json(data);
+      }
+    });
+  });
+  
 
 app.get('/api/procurement-adverts', (req, res) => {
     const adverts = [
@@ -59,46 +97,46 @@ app.get('/api/procurement-adverts', (req, res) => {
     res.json(adverts);
 });
 
-const { pipeline } = require('@transformers/pipeline');
-const { Tokenizer } = require('@tokenizers/nltk');
-const { AutoModelForQuestionAnswering, AutoTokenizer } = require('@transformers/node');
-const { Tensor } = require('node-cuda-api').internal;
-// or const { Tensor } = require('node-cuda-api').internal;
+// const { pipeline } = require('@transformers/pipeline');
+// const { Tokenizer } = require('@tokenizers/nltk');
+// const { AutoModelForQuestionAnswering, AutoTokenizer } = require('@transformers/node');
+// const { Tensor } = require('node-cuda-api').internal;
+// // or const { Tensor } = require('node-cuda-api').internal;
 
-const model_name = 't5-base';
-const tokenizer = new Tokenizer({ modelType: model_name });
-const generator = pipeline('text2text-generation', { model: model_name, tokenizer });
+// const model_name = 't5-base';
+// const tokenizer = new Tokenizer({ modelType: model_name });
+// const generator = pipeline('text2text-generation', { model: model_name, tokenizer });
 
-const qa_model_name = 'bert-large-uncased-whole-word-masking-finetuned-squad';
-const qa_tokenizer = AutoTokenizer.fromPretrained(qa_model_name);
+// const qa_model_name = 'bert-large-uncased-whole-word-masking-finetuned-squad';
+// const qa_tokenizer = AutoTokenizer.fromPretrained(qa_model_name);
 
-const qa_model = AutoModelForQuestionAnswering.fromPretrained(qa_model_name);
+// const qa_model = AutoModelForQuestionAnswering.fromPretrained(qa_model_name);
 
 
-app.post('/generate-quiz', async (req, res) => {
-    const { text } = req.body;
+// app.post('/generate-quiz', async (req, res) => {
+//     const { text } = req.body;
 
-    // Generate candidate questions using the language model
-    const questions = await generator(`generate question: ${text}`, { max_length: 128, num_return_sequences: 5 });
-    const candidateQuestions = questions.map(q => q.generated_text.replace('generate question:', '').trim());
+//     // Generate candidate questions using the language model
+//     const questions = await generator(`generate question: ${text}`, { max_length: 128, num_return_sequences: 5 });
+//     const candidateQuestions = questions.map(q => q.generated_text.replace('generate question:', '').trim());
 
-    // Extract potential answers using the question answering model
-    const answers = [];
-    for (const question of candidateQuestions) {
-        const inputs = qa_tokenizer.encodePlus(question, text);
-        const output = await qa_model(inputs.input_ids, inputs.attention_mask);
-        const start_logits = output.start_logits[0];
-        const end_logits = output.end_logits[0];
-        const all_tokens = qa_tokenizer.convertIdsToTokens(inputs.input_ids);
-        const answer = qa_tokenizer.decode(all_tokens.slice(start_logits, end_logits + 1)).trim();
-        answers.push(answer);
-    }
+//     // Extract potential answers using the question answering model
+//     const answers = [];
+//     for (const question of candidateQuestions) {
+//         const inputs = qa_tokenizer.encodePlus(question, text);
+//         const output = await qa_model(inputs.input_ids, inputs.attention_mask);
+//         const start_logits = output.start_logits[0];
+//         const end_logits = output.end_logits[0];
+//         const all_tokens = qa_tokenizer.convertIdsToTokens(inputs.input_ids);
+//         const answer = qa_tokenizer.decode(all_tokens.slice(start_logits, end_logits + 1)).trim();
+//         answers.push(answer);
+//     }
 
-    // Combine questions and answers to create quiz questions
-    const quizQuestions = candidateQuestions.map((question, i) => `What is ${answers[i]} in the context of: ${question}?`);
+//     // Combine questions and answers to create quiz questions
+//     const quizQuestions = candidateQuestions.map((question, i) => `What is ${answers[i]} in the context of: ${question}?`);
 
-    res.send(quizQuestions);
-});
+//     res.send(quizQuestions);
+// });
 
   
 

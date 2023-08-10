@@ -18,27 +18,31 @@
 
     <script>
         const advertsContainer = document.querySelector('.adverts');
-        let advertsObject = [];
+
         const getAdverts = async () => {
-
-            const advertsObject = await fetch('https://nodejs-test-server.vercel.app/api/procurement-adverts', {
-                method: 'GET',
-                mode: 'cors',
-            });
-            return (advertsObject.json());
+            try {
+                const response = await fetch('https://nodejs-test-server.vercel.app/api/procurement-adverts', {
+                    method: 'GET',
+                    mode: 'cors',
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to fetch');
+                }
+                const adverts = await response.json();
+                return adverts;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return [];
+            }
         }
-
-
 
         const main = async () => {
             const adverts = await getAdverts();
-            advertsObject = adverts;
-            console.log(adverts[0]);
+            console.log(adverts);
+            advertsContainer.innerHTML = `<p> data: ${JSON.stringify(adverts)}</p>`;
         }
 
         main();
-
-        advertsContainer.innerHTML = `<p> data: ` + advertsObject[0] + `</p>`;
     </script>
 </body>
 
