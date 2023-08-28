@@ -35,10 +35,10 @@ app.get('/', (req, res) => {
 });
 
 // Middleware
-app.use(bodyParser.urlencoded({ extended: false }));
+// app.use(bodyParser.urlencoded({ extended: false }));
 
 // USSD handler
-app.post('/ussd', (req, res) => {
+app.get('/ussd', (req, res) => {
   const { sessionId, serviceCode, phoneNumber, text } = req.body;
 
   // Your USSD logic here
