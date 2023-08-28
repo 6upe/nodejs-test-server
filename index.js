@@ -34,6 +34,22 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
+// Middleware
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// USSD handler
+app.post('/ussd', (req, res) => {
+  const { sessionId, serviceCode, phoneNumber, text } = req.body;
+
+  // Your USSD logic here
+  // You can use the `text` parameter to determine the user's input and respond accordingly
+
+  // Example response
+  const response = `CON Welcome to USSD Express App!\n1. Check Balance\n2. Recharge`;
+
+  res.send(response);
+});
+
 app.get('/about', (req, res) => {
     res.sendFile(__dirname + '/about.html');
 });
