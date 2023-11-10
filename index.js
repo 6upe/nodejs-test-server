@@ -1,188 +1,223 @@
-const express = require('express');
-const cors = require('cors');
-const http = require('http');
-
-const { MongoClient } = require('mongodb');
-
-
-
+const express = require("express");
+const multer = require("multer");
+const path = require("path");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const fs = require("fs");
+const nodemailer = require("nodemailer"); // Import nodemailer
 const app = express();
 
-// Set up CORS headers middleware
-
+// Enable CORS for your server (customize origin based on your needs)
 app.use(cors());
 
+// Enable bodyParser middleware for parsing JSON and URL-encoded data
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
+// Define storage for uploaded files
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // Specify the directory where uploaded files will be stored
+  },
+  filename: (req, file, callback) => {
+    // Generate a unique filename for each uploaded file
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const fileExtension = path.extname(file.originalname);
+    const fileName = file.fieldname + "-" + uniqueSuffix + fileExtension;
+    callback(null, fileName);
+  },
+});
 
-// MongoDB Atlas connection string
-const uri = 'mongodb+srv://admin:Pass123@pohg.sbyaxon.mongodb.net/?retryWrites=true&w=majority';
+// Create a multer instance with the storage options
+const upload = multer({ storage: storage });
 
-// Create a new MongoClient
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html");
+});
 
-// Connect to the MongoDB Atlas cluster
-client.connect(err => {
-  if (err) {
-    console.error('Error connecting to MongoDB:', err);
-  } else {
-    console.log('Connected to MongoDB');
+// Define a route to handle the form submission
+app.post(
+  "/zamangric-application-form",
+  upload.fields([{ name: "image" }, { name: "document" }]),
+  (req, res) => {
+    // Access form fields and uploaded files in req.body and req.files
+    const country = req.body.country;
+    const membershipType = req.body.membershipType;
+    const fullnames = req.body.fullnames;
+    const email = req.body.email;
+    const phone = req.body.phone;
+    const address = req.body.address;
+    const dob = req.body.dob;
+    const imageFile = req.files.image[0]; // Access the image file
+    const documentFile = req.files.document[0]; // Access the document file
+
+    console.log(
+      "Processing Application Form (Server-side): ",
+      req.body,
+      req.files
+    );
+
+    try {
+      // Save the files to your desired location, e.g., in the 'uploads/' directory
+      fs.writeFileSync(imageFile.filename, imageFile.buffer);
+      fs.writeFileSync(documentFile.filename,
+        documentFile.buffer
+      );
+    } catch (error) {
+      console.log("Error writing files: ", error);
+    } finally {
+      // Configure nodemailer to send the email
+      const transporter = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+          user: "katongobupe444@gmail.com",
+          pass: "aqbm rche vjnf gbbu",
+        },
+      });
+
+      const mailOptions = {
+        from: 'katongobupe444@gmail.com', // Replace with your Hotmail email
+        to: 'katongobupe@hotmail.com', // Recipient email
+        subject: `ZAMANGRIC Membership Application: ${membershipType}`,
+        html: `
+        <html>
+        <head>
+          <style>
+            body {
+              font-family: 'Arial', sans-serif;
+              margin: 20px;
+            }
+      
+            h2 {
+              color: #007BFF;
+            }
+      
+            p {
+              margin-bottom: 10px;
+            }
+      
+            .attachment-container {
+              margin-top: 20px;
+              border: 1px solid #ddd;
+              padding: 10px;
+              border-radius: 5px;
+            }
+      
+            .image-container img {
+              max-width: 100%;
+              height: auto;
+              border-radius: 5px;
+              margin-top: 10px;
+            }
+      
+            .pdf-container {
+              margin-top: 10px;
+            }
+          </style>
+        </head>
+        <body>
+        
+          <h2>ZAMANGRIC Membership Application: ${membershipType}</h2>
+          <div class="attachment-container">
+            <p><strong>Application Letter:</strong></p>
+            <div class="pdf-container">
+              <p>You can view the attached PDF document <a href="cid:unique-document-name" download="${imageFile.filename}">here</a>.</p>
+            </div>
+          </div>
+          <p><strong>Country:</strong> ${country}</p>
+          <p><strong>Membership Type:</strong> ${membershipType}</p>
+          <p><strong>Full Names:</strong> ${fullnames}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Phone:</strong> ${phone}</p>
+          <p><strong>Address:</strong> ${address}</p>
+          <p><strong>Date of Birth:</strong> ${dob}</p>
+
+      
+          <div class="attachment-container">
+            <p><strong>Image:</strong></p>
+            <div class="image-container">
+              <img src="cid:unique-image-name" alt="Portrait Image">
+            </div>
+          </div>
+      
+          
+        </body>
+      </html>
+      
+        `,
+        attachments: [
+          { filename: imageFile.originalname, path: `uploads/${imageFile.filename}`, cid: 'unique-image-name' },
+          { filename: documentFile.originalname, path: `uploads/${documentFile.filename}`, cid: 'unique-document-name' },
+        ],
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Email could not be sent:", error);
+          res
+            .status(500)
+            .json({ message: "Error sending email", status: "failed" });
+        } else {
+          console.log("Email sent:", info.response);
+          res
+            .status(200)
+            .json({ message: "Application Submitted!", status: "success" });
+        }
+      });
+    }
   }
-});
-
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
+);
 
 // Middleware
 // app.use(bodyParser.urlencoded({ extended: false }));
 
 // USSD handler
 
-app.post('/ussd', (req, res) => {
+app.post("/ussd", (req, res) => {
   // Read the variables sent via POST from our API
-  const {
-      sessionId,
-      serviceCode,
-      phoneNumber,
-      text,
-  } = req.body;
+  const { sessionId, serviceCode, phoneNumber, text } = req.body;
 
-  let response = '';
+  let response = "";
 
-  if (text == '') {
-      // This is the first request. Note how we start the response with CON
-      response = `CON What would you like to check
+  if (text == "") {
+    // This is the first request. Note how we start the response with CON
+    response = `CON What would you like to check
       1. My account
       2. My phone number`;
-  } else if ( text == '1') {
-      // Business logic for first level response
-      response = `CON Choose account information you want to view
+  } else if (text == "1") {
+    // Business logic for first level response
+    response = `CON Choose account information you want to view
       1. Account number`;
-  } else if ( text == '2') {
-      // Business logic for first level response
-      // This is a terminal request. Note how we start the response with END
-      response = `END Your phone number is ${phoneNumber}`;
-  } else if ( text == '1*1') {
-      // This is a second level response where the user selected 1 in the first instance
-      const accountNumber = 'ACC100101';
-      // This is a terminal request. Note how we start the response with END
-      response = `END Your account number is ${accountNumber}`;
+  } else if (text == "2") {
+    // Business logic for first level response
+    // This is a terminal request. Note how we start the response with END
+    response = `END Your phone number is ${phoneNumber}`;
+  } else if (text == "1*1") {
+    // This is a second level response where the user selected 1 in the first instance
+    const accountNumber = "ACC100101";
+    // This is a terminal request. Note how we start the response with END
+    response = `END Your account number is ${accountNumber}`;
   }
 
   // Send the response back to the API
-  res.set('Content-Type: text/plain');
+  res.set("Content-Type: text/plain");
   res.send(response);
 });
 
-app.get('/about', (req, res) => {
-    res.sendFile(__dirname + '/about.html');
+app.get("/about", (req, res) => {
+  res.sendFile(__dirname + "/about.html");
 });
 
-app.get('/extractor', (req, res) => {
-    res.sendFile(__dirname + '/extractor.html');
+app.get("/extractor", (req, res) => {
+  res.sendFile(__dirname + "/extractor.html");
 });
 
-app.get('/kwizme', (req, res) => {
-    res.sendFile(__dirname + '/kwizme.html');
+app.get("/kwizme", (req, res) => {
+  res.sendFile(__dirname + "/kwizme.html");
 });
-
-app.get('/get-data', (req, res) => {
-    const db = client.db('testdb');
-    const collection = db.collection('users');
-  
-    collection.find().toArray((err, data) => {
-      if (err) {
-        console.error('Error fetching data:', err);
-        res.status(500).send('Internal Server Error');
-      } else {
-        console.log(data);
-        res.json(data);
-      }
-    });
-  });
-  
-
-app.get('/api/procurement-adverts', (req, res) => {
-    const adverts = [
-        {
-            advertID: "1",
-            advertTitle: "Job Oppotunity: Software Developer",
-            advertBody: "Some quick example text to build on the card title and make up the bulk of the card's content.",
-            advertCreatedAt: "22 Jan, 2023",
-            advertImagePath: "../procurement-images/procurement (1).jpg"
-        },
-        {
-            advertID: "2",
-            advertTitle: "Tender: Renovation of Ablution Block",
-            advertBody: "Some quick example text to build on the card title and make up the bulk of the card's content.",
-            advertCreatedAt: "22 Jan, 2023",
-            advertImagePath: "../procurement-images/procurement (2).jpg"
-        },
-        {
-            advertID: "3",
-            advertTitle: "Supplier Registration",
-            advertBody: "Some quick example text to build on the card title and make up the bulk of the card's content.",
-            advertCreatedAt: "22 Jan, 2023",
-            advertImagePath: "../procurement-images/procurement (3).jpg"
-        },
-        {
-            advertID: "4",
-            advertTitle: "Contract Awards",
-            advertBody: "Some quick example text to build on the card title and make up the bulk of the card's content.",
-            advertCreatedAt: "22 Jan, 2023",
-            advertImagePath: "../procurement-images/procurement (4).jpg"
-        },
-    ];
-
-    res.json(adverts);
-});
-
-// const { pipeline } = require('@transformers/pipeline');
-// const { Tokenizer } = require('@tokenizers/nltk');
-// const { AutoModelForQuestionAnswering, AutoTokenizer } = require('@transformers/node');
-// const { Tensor } = require('node-cuda-api').internal;
-// // or const { Tensor } = require('node-cuda-api').internal;
-
-// const model_name = 't5-base';
-// const tokenizer = new Tokenizer({ modelType: model_name });
-// const generator = pipeline('text2text-generation', { model: model_name, tokenizer });
-
-// const qa_model_name = 'bert-large-uncased-whole-word-masking-finetuned-squad';
-// const qa_tokenizer = AutoTokenizer.fromPretrained(qa_model_name);
-
-// const qa_model = AutoModelForQuestionAnswering.fromPretrained(qa_model_name);
-
-
-// app.post('/generate-quiz', async (req, res) => {
-//     const { text } = req.body;
-
-//     // Generate candidate questions using the language model
-//     const questions = await generator(`generate question: ${text}`, { max_length: 128, num_return_sequences: 5 });
-//     const candidateQuestions = questions.map(q => q.generated_text.replace('generate question:', '').trim());
-
-//     // Extract potential answers using the question answering model
-//     const answers = [];
-//     for (const question of candidateQuestions) {
-//         const inputs = qa_tokenizer.encodePlus(question, text);
-//         const output = await qa_model(inputs.input_ids, inputs.attention_mask);
-//         const start_logits = output.start_logits[0];
-//         const end_logits = output.end_logits[0];
-//         const all_tokens = qa_tokenizer.convertIdsToTokens(inputs.input_ids);
-//         const answer = qa_tokenizer.decode(all_tokens.slice(start_logits, end_logits + 1)).trim();
-//         answers.push(answer);
-//     }
-
-//     // Combine questions and answers to create quiz questions
-//     const quizQuestions = candidateQuestions.map((question, i) => `What is ${answers[i]} in the context of: ${question}?`);
-
-//     res.send(quizQuestions);
-// });
-
-  
 
 const port = process.env.PORT || 4000;
 
 app.listen(port, () => {
-    console.log(`server has started on port ${port}`);
+  console.log(`server has started on port ${port}`);
 });
